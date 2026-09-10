@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import { Building2, Lock, Phone, Mail, User, ArrowRight, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
+import { Building2, Lock, Phone, Mail, User, ArrowRight, Globe } from 'lucide-react';
 
 export const Register = () => {
   const { t } = useTranslation();
   const { register } = useAuth();
+  const { toggleLanguage, isTelugu } = useLanguage();
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
@@ -15,6 +17,10 @@ export const Register = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('MEMBER');
   const [preferredLanguage, setPreferredLanguage] = useState('en');
+  const [groupCode, setGroupCode] = useState('');
+  const [groupName, setGroupName] = useState('');
+  const [villageTown, setVillageTown] = useState('');
+  const [district, setDistrict] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -30,7 +36,11 @@ export const Register = () => {
         email: email || undefined,
         password,
         role,
-        preferredLanguage,
+        preferredLanguage: isTelugu ? 'te' : preferredLanguage,
+        groupCode: role === 'MEMBER' ? groupCode : undefined,
+        groupName: role === 'HEAD' ? groupName : undefined,
+        villageTown: role === 'HEAD' ? villageTown : undefined,
+        district: role === 'HEAD' ? district : undefined,
       });
       if (data.success) {
         navigate('/dashboard');
@@ -43,16 +53,24 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
+      <button
+        type="button"
+        onClick={() => { toggleLanguage(); setPreferredLanguage(isTelugu ? 'en' : 'te'); }}
+        className="absolute top-4 right-4 sm:top-8 sm:right-8 flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-700 bg-emerald-900/60 text-emerald-200 text-xs font-semibold hover:bg-emerald-800 transition-all shadow-md"
+      >
+        <Globe className="w-4 h-4 text-amber-400" />
+        <span>{isTelugu ? 'English' : 'తెలుగు'}</span>
+      </button>
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center px-4">
         <div className="inline-flex p-3 bg-gradient-to-tr from-emerald-600 to-amber-500 rounded-2xl text-white shadow-xl mb-4">
           <Building2 className="w-8 h-8" />
         </div>
         <h2 className="text-3xl font-extrabold tracking-tight text-white">
-          Create Smart<span className="text-amber-400">SHG</span> Account
+          {t('auth.createAccount')}
         </h2>
         <p className="mt-2 text-sm text-emerald-200/80">
-          Digital community banking and bookkeeping platform
+          {t('auth.subtitle')}
         </p>
       </div>
 
@@ -67,7 +85,7 @@ export const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Full Name
+                {t('auth.fullName')}
               </label>
               <div className="relative">
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -76,7 +94,7 @@ export const Register = () => {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Smt. Kamala Devi"
+                  placeholder={t('auth.namePlaceholder')}
                   className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition-all font-medium text-slate-900"
                 />
               </div>
@@ -84,7 +102,7 @@ export const Register = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                10-Digit Mobile Number
+                {t('auth.phone')}
               </label>
               <div className="relative">
                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -93,7 +111,7 @@ export const Register = () => {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="9876543210"
+                  placeholder={t('auth.phonePlaceholder')}
                   className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition-all font-medium text-slate-900"
                 />
               </div>
@@ -101,7 +119,7 @@ export const Register = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Email Address (Optional)
+                {t('auth.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -109,7 +127,7 @@ export const Register = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="kamala@example.com"
+                  placeholder={t('auth.emailPlaceholder')}
                   className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition-all font-medium text-slate-900"
                 />
               </div>
@@ -117,7 +135,7 @@ export const Register = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Role in SHG
+                {t('auth.role')}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -129,7 +147,7 @@ export const Register = () => {
                       : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}
                 >
-                  SHG Member
+                  {t('auth.member')}
                 </button>
                 <button
                   type="button"
@@ -140,14 +158,41 @@ export const Register = () => {
                       : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}
                 >
-                  Group Leader (Head)
+                  {t('auth.leader')}
                 </button>
               </div>
             </div>
 
+            {role === 'MEMBER' ? (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  {t('auth.groupCode')}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={groupCode}
+                  onChange={(e) => setGroupCode(e.target.value.toUpperCase())}
+                  placeholder={t('auth.groupCodePlaceholder')}
+                  className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition-all font-medium text-slate-900"
+                />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">{t('auth.groupName')}</label>
+                  <input type="text" required value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder={t('auth.groupNamePlaceholder')} className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition-all font-medium text-slate-900" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="text" required value={villageTown} onChange={(e) => setVillageTown(e.target.value)} placeholder={t('auth.villagePlaceholder')} aria-label={t('auth.village')} className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition-all font-medium text-slate-900" />
+                  <input type="text" required value={district} onChange={(e) => setDistrict(e.target.value)} placeholder={t('auth.districtPlaceholder')} aria-label={t('auth.district')} className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition-all font-medium text-slate-900" />
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -156,7 +201,7 @@ export const Register = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder={t('auth.passwordPlaceholder')}
                   className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition-all font-medium text-slate-900"
                 />
               </div>
@@ -167,15 +212,15 @@ export const Register = () => {
               disabled={loading}
               className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl shadow-lg transition-all disabled:opacity-50"
             >
-              <span>{loading ? t('common.loading') : 'Complete Registration'}</span>
+              <span>{loading ? t('common.loading') : t('auth.register')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
           <div className="mt-6 text-center text-xs text-slate-500">
-            Already have an account?{' '}
+            {t('auth.alreadyAccount')}{' '}
             <Link to="/login" className="font-bold text-emerald-800 hover:text-emerald-900">
-              Sign In here
+              {t('auth.signIn')}
             </Link>
           </div>
         </div>

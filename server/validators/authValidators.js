@@ -1,5 +1,5 @@
 const validateRegistration = (req, res, next) => {
-  const { name, password, email, phone, role } = req.body;
+  const { name, password, email, phone, role, groupCode, groupName, villageTown, district } = req.body;
 
   if (!name || name.trim().length < 2) {
     return res.status(400).json({ success: false, message: 'Name must be at least 2 characters long.' });
@@ -24,6 +24,14 @@ const validateRegistration = (req, res, next) => {
   // Prevent arbitrary users from registering as HEAD for existing groups without group creation flow
   if (role && !['HEAD', 'MEMBER'].includes(role)) {
     return res.status(400).json({ success: false, message: 'Role must be either HEAD or MEMBER.' });
+  }
+
+  if (role === 'MEMBER' && (!groupCode || !groupCode.trim())) {
+    return res.status(400).json({ success: false, message: 'Group code is required for member registration.' });
+  }
+
+  if (role === 'HEAD' && (!groupName || !groupName.trim() || !villageTown || !villageTown.trim() || !district || !district.trim())) {
+    return res.status(400).json({ success: false, message: 'Group name, village or town, and district are required for leader registration.' });
   }
 
   next();

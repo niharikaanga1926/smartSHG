@@ -9,11 +9,6 @@ import {
   Landmark,
   HandCoins,
   CalendarDays,
-  Receipt,
-  FileBarChart2,
-  FileText,
-  ShieldCheck,
-  Award,
   LogOut,
   Building2,
 } from 'lucide-react';
@@ -31,17 +26,13 @@ export const Sidebar = ({ onCloseMobile }) => {
           { to: '/cash-bank', label: t('nav.cashBank'), icon: Landmark },
           { to: '/loans', label: t('nav.loans'), icon: HandCoins },
           { to: '/meetings', label: t('nav.meetings'), icon: CalendarDays },
-          { to: '/expenses', label: t('nav.expenses'), icon: Receipt },
-          { to: '/reports', label: t('nav.reports'), icon: FileBarChart2 },
-          { to: '/audit', label: t('nav.auditLog'), icon: ShieldCheck },
         ]
       : [
           { to: '/savings', label: t('nav.mySavings'), icon: PiggyBank },
           { to: '/loans', label: t('nav.myLoans'), icon: HandCoins },
           { to: '/meetings', label: t('nav.myAttendance'), icon: CalendarDays },
-          { to: '/my-statement', label: t('nav.myStatement'), icon: FileText },
+          { to: '/savings', label: t('nav.mySavings'), icon: PiggyBank },
         ]),
-    { to: '/schemes', label: t('nav.schemes'), icon: Award },
   ];
 
   return (

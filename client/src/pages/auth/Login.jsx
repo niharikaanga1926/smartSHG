@@ -57,7 +57,7 @@ export const Login = () => {
           <Building2 className="w-9 h-9" />
         </div>
         <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-          Smart<span className="text-amber-400">SHG</span>
+          {t('auth.signInTitle')}
         </h2>
         <p className="mt-2 text-sm text-emerald-200/80 font-medium">
           {t('app.subtitle')}
@@ -74,9 +74,7 @@ export const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Email or 10-Digit Mobile
-              </label>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">{t('auth.identifier')}</label>
               <div className="relative">
                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -84,7 +82,7 @@ export const Login = () => {
                   required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="e.g. 9876543210 or email"
+                  placeholder={t('auth.identifierPlaceholder')}
                   className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition-all font-medium text-slate-900"
                 />
               </div>
@@ -99,7 +97,7 @@ export const Login = () => {
                   to="/forgot-password"
                   className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold"
                 >
-                  Forgot?
+                  {t('auth.forgot')}
                 </Link>
               </div>
               <div className="relative">
@@ -120,7 +118,7 @@ export const Login = () => {
               disabled={loading}
               className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-xl shadow-lg shadow-emerald-900/20 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-600 disabled:opacity-50"
             >
-              <span>{loading ? t('common.loading') : 'Sign In to Dashboard'}</span>
+              <span>{loading ? t('common.loading') : t('auth.signInButton')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -128,7 +126,7 @@ export const Login = () => {
           {/* Quick 1-Click Demo Logins */}
           <div className="mt-6 pt-5 border-t border-slate-100">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider text-center mb-2.5">
-              1-Click Demo Accounts
+              {t('auth.demoAccounts')}
             </p>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -138,7 +136,7 @@ export const Login = () => {
               >
                 <p className="text-xs font-bold text-emerald-900 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                  Demo HEAD
+                  {t('auth.demoLeader')}
                 </p>
                 <p className="text-[10px] text-emerald-700 truncate mt-0.5">Radha Devi (President)</p>
               </button>
@@ -149,7 +147,7 @@ export const Login = () => {
               >
                 <p className="text-xs font-bold text-amber-900 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-700" />
-                  Demo MEMBER
+                  {t('auth.demoMember')}
                 </p>
                 <p className="text-[10px] text-amber-700 truncate mt-0.5">Lakshmi Bai</p>
               </button>
@@ -157,9 +155,9 @@ export const Login = () => {
           </div>
 
           <div className="mt-6 text-center text-xs text-slate-500">
-            Don't have an account?{' '}
+            {t('auth.noAccount')}{' '}
             <Link to="/register" className="font-bold text-emerald-800 hover:text-emerald-900">
-              Register here
+              {t('auth.registerHere')}
             </Link>
           </div>
         </div>

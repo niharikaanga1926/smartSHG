@@ -13,7 +13,26 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 const register = async (req, res, next) => {
   try {
-    const { name, email, phone, password, role = 'MEMBER', preferredLanguage = 'en' } = req.body;
+    const {
+      name,
+      email,
+      phone,
+      password,
+      role = 'MEMBER',
+      preferredLanguage = 'en',
+      groupCode,
+      groupName,
+      villageTown,
+      district,
+    } = req.body;
+
+    let registrationGroup = null;
+    if (role === 'MEMBER') {
+      registrationGroup = await Group.findOne({ code: groupCode.trim().toUpperCase(), status: 'ACTIVE' });
+      if (!registrationGroup) {
+        return res.status(404).json({ success: false, message: 'No active SHG found with that group code.' });
+      }
+    }
 
     // Check existing
     if (email) {
@@ -39,6 +58,23 @@ const register = async (req, res, next) => {
       preferredLanguage,
     });
 
+    if (role === 'HEAD') {
+      registrationGroup = await Group.create({
+        name: groupName.trim(),
+        villageTown: villageTown.trim(),
+        district: district.trim(),
+        headId: user._id,
+      });
+    } else {
+      const memberCount = await Member.countDocuments({ groupId: registrationGroup._id });
+      await Member.create({
+        groupId: registrationGroup._id,
+        userId: user._id,
+        memberNumber: `M-${String(memberCount + 1).padStart(2, '0')}`,
+        status: 'ACTIVE',
+      });
+    }
+
     const token = generateToken(user._id);
 
     res.status(201).json({
@@ -52,6 +88,13 @@ const register = async (req, res, next) => {
         phone: user.phone,
         role: user.role,
         preferredLanguage: user.preferredLanguage,
+        defaultGroup: {
+          id: registrationGroup._id,
+          name: registrationGroup.name,
+          code: registrationGroup.code,
+          villageTown: registrationGroup.villageTown,
+          district: registrationGroup.district,
+        },
       },
     });
   } catch (err) {

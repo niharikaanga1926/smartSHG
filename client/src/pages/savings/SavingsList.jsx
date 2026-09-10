@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { savingsService } from '../../services/savingsService';
 import { memberService } from '../../services/memberService';
-import { paymentService } from '../../services/paymentService';
 import { PageHeader } from '../../components/common/PageHeader';
 import { SummaryCard } from '../../components/common/SummaryCard';
 import { DataTable } from '../../components/common/DataTable';
@@ -53,9 +52,6 @@ export const SavingsList = () => {
 
   // Receipt Modal
   const [activeReceipt, setActiveReceipt] = useState(null);
-
-  // Online Pay (Member)
-  const [payingOnline, setPayingOnline] = useState(false);
 
   const loadData = async () => {
     if (!activeGroup) return;
@@ -128,68 +124,6 @@ export const SavingsList = () => {
       alert(err.message || 'Failed to record savings');
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleMemberPayOnline = async () => {
-    try {
-      setPayingOnline(true);
-      const amountToPay = memberSavingsSummary?.currentMonthPending > 0
-        ? memberSavingsSummary.currentMonthPending
-        : (memberSavingsSummary?.monthlyExpected || 500);
-
-      const orderRes = await paymentService.createOrder({
-        amount: amountToPay,
-        purpose: 'SAVINGS',
-        groupId: activeGroup._id || activeGroup.id,
-        savingsPeriod: memberSavingsSummary?.currentPeriod,
-      });
-
-      const { order } = orderRes;
-
-      if (window.Razorpay && !order.simulated && order.keyId && !order.keyId.includes('simulated')) {
-        const options = {
-          key: order.keyId,
-          amount: order.amount,
-          currency: 'INR',
-          name: 'SmartSHG',
-          description: `Savings for ${memberSavingsSummary?.currentPeriod}`,
-          order_id: order.orderId,
-          handler: async (response) => {
-            const verifyRes = await paymentService.verifyPayment({
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-              internalPaymentId: order.paymentId,
-            });
-            if (verifyRes.success) {
-              setActiveReceipt(verifyRes.receipt);
-              loadData();
-            }
-          },
-          prefill: { name: user?.name, email: user?.email, contact: user?.phone },
-          theme: { color: '#047857' },
-        };
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', () => {
-          alert('Payment was not completed. No transaction was recorded.');
-        });
-        rzp.open();
-      } else {
-        // The Razorpay checkout script isn't loaded — we never fabricate a
-        // successful payment here. The backend already refuses to create an
-        // order at all when the gateway isn't configured, so reaching this
-        // branch means the checkout script itself failed to load.
-        alert('Online payment could not be started (payment gateway script unavailable). Please try again or use a cash payment.');
-      }
-    } catch (err) {
-      if (err.code === 'PAYMENT_GATEWAY_NOT_CONFIGURED') {
-        alert(err.message || 'Online payments are not available right now. Please use a cash payment.');
-      } else {
-        alert(err.message || 'Payment initiation failed.');
-      }
-    } finally {
-      setPayingOnline(false);
     }
   };
 
@@ -301,16 +235,7 @@ export const SavingsList = () => {
               <PlusCircle className="w-4 h-4" />
               {t('dashboard.recordSavings')}
             </button>
-          ) : (
-            <button
-              onClick={handleMemberPayOnline}
-              disabled={payingOnline}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl shadow-sm transition-colors disabled:opacity-50"
-            >
-              <CreditCard className="w-4 h-4" />
-              {payingOnline ? 'Processing...' : t('dashboard.payOnline')}
-            </button>
-          )
+          ) : null
         }
       />
 

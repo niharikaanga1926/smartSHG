@@ -62,8 +62,50 @@ async function runTests() {
     }
     console.log('  PASSED: Health check returned 200 OK');
 
-    // 2. Authentication: Login as HEAD (Radha Devi)
-    console.log('\nTest 2: Authenticate as Demo HEAD (Radha Devi)');
+    // 2. Registration: create a leader-owned group and a member in that group
+    console.log('\nTest 2: Register and authenticate fresh HEAD and MEMBER accounts');
+    const registrationSuffix = Date.now();
+    const newHead = await request('POST', '/api/auth/register', {
+      name: 'Test Group Leader',
+      email: `leader-${registrationSuffix}@example.com`,
+      phone: `9${String(registrationSuffix).slice(-9)}`,
+      password: 'password123',
+      role: 'HEAD',
+      preferredLanguage: 'en',
+      groupName: 'Test Women SHG',
+      villageTown: 'Test Village',
+      district: 'Test District',
+    });
+    if (newHead.status !== 201 || !newHead.data.token || !newHead.data.user.defaultGroup?.code) {
+      throw new Error(`Fresh HEAD registration failed: ${JSON.stringify(newHead)}`);
+    }
+    const newMember = await request('POST', '/api/auth/register', {
+      name: 'Test Member',
+      email: `member-${registrationSuffix}@example.com`,
+      phone: `8${String(registrationSuffix).slice(-9)}`,
+      password: 'password123',
+      role: 'MEMBER',
+      preferredLanguage: 'te',
+      groupCode: newHead.data.user.defaultGroup.code,
+    });
+    if (newMember.status !== 201 || !newMember.data.token || !newMember.data.user.defaultGroup) {
+      throw new Error(`Fresh MEMBER registration failed: ${JSON.stringify(newMember)}`);
+    }
+    const freshHeadLogin = await request('POST', '/api/auth/login', {
+      identifier: `leader-${registrationSuffix}@example.com`,
+      password: 'password123',
+    });
+    const freshMemberLogin = await request('POST', '/api/auth/login', {
+      identifier: `member-${registrationSuffix}@example.com`,
+      password: 'password123',
+    });
+    if (freshHeadLogin.status !== 200 || !freshHeadLogin.data.user.defaultGroup || freshMemberLogin.status !== 200 || !freshMemberLogin.data.user.defaultGroup) {
+      throw new Error(`Fresh account login failed: ${JSON.stringify({ freshHeadLogin, freshMemberLogin })}`);
+    }
+    console.log('  PASSED: Fresh HEAD and MEMBER accounts registered and logged in');
+
+    // 3. Authentication: Login as HEAD (Radha Devi)
+    console.log('\nTest 3: Authenticate as Demo HEAD (Radha Devi)');
     const headLogin = await request('POST', '/api/auth/login', {
       identifier: 'radha@smartshg.org',
       password: 'password123',
@@ -75,8 +117,8 @@ async function runTests() {
     const groupId = headLogin.data.user.defaultGroup.id;
     console.log(`  PASSED: HEAD authenticated. Group ID: ${groupId}`);
 
-    // 3. Authentication: Login as MEMBER (Lakshmi Bai)
-    console.log('\nTest 3: Authenticate as Demo MEMBER (Lakshmi Bai)');
+    // 4. Authentication: Login as MEMBER (Lakshmi Bai)
+    console.log('\nTest 4: Authenticate as Demo MEMBER (Lakshmi Bai)');
     const memberLogin = await request('POST', '/api/auth/login', {
       identifier: 'lakshmi@smartshg.org',
       password: 'password123',
@@ -257,7 +299,7 @@ async function runTests() {
     console.log(`  TE Title: "${sampleScheme.title.te}"`);
 
     console.log('\n=============================================');
-    console.log('ALL 11 BACKEND API TESTS PASSED SUCCESSFULLY!');
+    console.log('ALL BACKEND API TESTS PASSED SUCCESSFULLY!');
     console.log('=============================================\n');
 
     server.close();

@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, PiggyBank, HandCoins, CalendarDays, Award } from 'lucide-react';
+import { LayoutDashboard, PiggyBank, HandCoins, CalendarDays } from 'lucide-react';
 
 export const MobileNav = () => {
   const { t } = useTranslation();
@@ -13,7 +13,6 @@ export const MobileNav = () => {
     { to: '/savings', label: t('nav.savings'), icon: PiggyBank },
     { to: '/loans', label: t('nav.loans'), icon: HandCoins },
     { to: '/meetings', label: t('nav.meetings'), icon: CalendarDays },
-    { to: '/schemes', label: t('nav.schemes'), icon: Award },
   ];
 
   return (

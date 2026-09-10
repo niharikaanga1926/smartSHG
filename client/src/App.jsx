@@ -13,6 +13,7 @@ import { SavingsList } from './pages/savings/SavingsList';
 import { LedgerList } from './pages/cash-bank/LedgerList';
 import { LoanList } from './pages/loans/LoanList';
 import { MeetingList } from './pages/meetings/MeetingList';
+import { AppLayout } from './components/layout/AppLayout';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -65,59 +66,14 @@ const App = () => {
       />
 
       {/* Protected routes */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardRouter />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/members"
-        element={
-          <ProtectedRoute>
-            <MemberList />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/savings"
-        element={
-          <ProtectedRoute>
-            <SavingsList />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/cash-bank"
-        element={
-          <ProtectedRoute>
-            <LedgerList />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/loans"
-        element={
-          <ProtectedRoute>
-            <LoanList />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/meetings"
-        element={
-          <ProtectedRoute>
-            <MeetingList />
-          </ProtectedRoute>
-        }
-      />
+      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+        <Route path="/dashboard" element={<DashboardRouter />} />
+        <Route path="/members" element={<MemberList />} />
+        <Route path="/savings" element={<SavingsList />} />
+        <Route path="/cash-bank" element={<LedgerList />} />
+        <Route path="/loans" element={<LoanList />} />
+        <Route path="/meetings" element={<MeetingList />} />
+      </Route>
 
       {/* Default */}
       <Route

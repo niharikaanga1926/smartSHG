@@ -9,7 +9,6 @@ const memberRoutes = require('./routes/memberRoutes');
 const savingsRoutes = require('./routes/savingsRoutes');
 const ledgerRoutes = require('./routes/ledgerRoutes');
 const loanRoutes = require('./routes/loanRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
 const meetingRoutes = require('./routes/meetingRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const reportRoutes = require('./routes/reportRoutes');
@@ -25,7 +24,7 @@ app.use(
     origin: '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-group-id', 'x-razorpay-signature'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-group-id'],
   })
 );
 
@@ -65,7 +64,6 @@ app.use('/api/groups/:groupId/meetings', meetingRoutes);
 app.use('/api/groups/:groupId/expenses', expenseRoutes);
 app.use('/api/groups/:groupId/reports', reportRoutes);
 app.use('/api/groups/:groupId/audit', auditRoutes);
-app.use('/api/payments', paymentRoutes);
 app.use('/api/schemes', schemeRoutes);
 app.use('/api/notifications', notificationRoutes);
 

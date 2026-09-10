@@ -5,7 +5,6 @@ import { useAuth } from '../../context/AuthContext';
 import { savingsService } from '../../services/savingsService';
 import { loanService } from '../../services/loanService';
 import { meetingService } from '../../services/meetingService';
-import { paymentService } from '../../services/paymentService';
 import { PageHeader } from '../../components/common/PageHeader';
 import { SummaryCard } from '../../components/common/SummaryCard';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -35,7 +34,6 @@ export const MemberDashboard = () => {
   const [attendanceSummary, setAttendanceSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [paying, setPaying] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
 
   const loadData = async () => {
@@ -71,72 +69,6 @@ export const MemberDashboard = () => {
     loadData();
   }, [activeGroup]);
 
-  // Razorpay Test Mode / Simulated Payment Flow for Savings
-  const handlePaySavingsOnline = async () => {
-    try {
-      setPaying(true);
-      const amountToPay = savingsSummary?.currentMonthPending > 0 ? savingsSummary.currentMonthPending : (savingsSummary?.monthlyExpected || 500);
-
-      // Step 1: Create order in backend
-      const orderRes = await paymentService.createOrder({
-        amount: amountToPay,
-        purpose: 'SAVINGS',
-        groupId: activeGroup._id || activeGroup.id,
-        savingsPeriod: savingsSummary?.currentPeriod,
-      });
-
-      const { order } = orderRes;
-
-      // If Razorpay SDK is available and not pure simulation
-      if (window.Razorpay && !order.simulated && order.keyId && !order.keyId.includes('simulated')) {
-        const options = {
-          key: order.keyId,
-          amount: order.amount,
-          currency: 'INR',
-          name: 'SmartSHG',
-          description: `Monthly Savings (${savingsSummary?.currentPeriod})`,
-          order_id: order.orderId,
-          handler: async (response) => {
-            const verifyRes = await paymentService.verifyPayment({
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-              internalPaymentId: order.paymentId,
-            });
-            if (verifyRes.success) {
-              setReceiptData(verifyRes.receipt);
-              loadData();
-            }
-          },
-          prefill: {
-            name: user?.name,
-            email: user?.email || '',
-            contact: user?.phone || '',
-          },
-          theme: { color: '#047857' },
-        };
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', () => {
-          alert('Payment was not completed. No transaction was recorded.');
-        });
-        rzp.open();
-      } else {
-        // The Razorpay checkout script isn't loaded — we never fabricate a
-        // successful payment here. The backend already refuses to create an
-        // order at all when the gateway isn't configured.
-        alert('Online payment could not be started (payment gateway script unavailable). Please try again or use a cash payment.');
-      }
-    } catch (err) {
-      if (err.code === 'PAYMENT_GATEWAY_NOT_CONFIGURED') {
-        alert(err.message || 'Online payments are not available right now. Please use a cash payment.');
-      } else {
-        alert(err.message || 'Payment initiation failed.');
-      }
-    } finally {
-      setPaying(false);
-    }
-  };
-
   if (loading) return <LoadingState message="Loading your savings & loan summary..." />;
   if (error) return <ErrorState message={error} onRetry={loadData} />;
 
@@ -148,14 +80,6 @@ export const MemberDashboard = () => {
         badge={<StatusBadge status="ACTIVE" text="Active Member" />}
         actionButton={
           <div className="flex items-center gap-2">
-            <button
-              onClick={handlePaySavingsOnline}
-              disabled={paying}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl shadow-md transition-all disabled:opacity-50"
-            >
-              <CreditCard className="w-4 h-4" />
-              {paying ? 'Processing...' : t('dashboard.payOnline')}
-            </button>
             <button
               onClick={() => navigate(`/reports/member-statement/${user?.memberId}`)}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors"
